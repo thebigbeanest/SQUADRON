@@ -1,0 +1,112 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: black;
+    color: white;
+}
+
+.button {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background-color: white;
+    color: black;
+}
+
+#gameArea {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#player {
+    position: absolute;
+    width: 100px;
+    height: 50px;
+    background-image: url('assets/playership.png');
+    background-size: cover;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.bullet {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: yellow;
+}
+
+.enemy {
+    position: absolute;
+    width: 100px;
+    height: 80px;
+    background-image: url('assets/enemysmall.png');
+    background-size: cover;
+}
+
+.largeEnemy {
+    position: absolute;
+    width: 750px;
+    height: 300px;
+    background-image: url('assets/largeenemy2.png');
+    background-size: cover;
+}
+
+.enemyBullet {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: green;
+}
+
+#bestiary h2 {
+    color: white;
+}
+
+#searchInput,
+#searchButton {
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 5px;
+}
+
+#searchInput::placeholder {
+    color: white;
+}
+
+#searchButton:hover {
+    background-color: white;
+    color: black;
+}
+
+#searchResults {
+    color: white;
+}
+
+#bestiaryBackButton,
+#introBackButton {
+    background-color: black;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#bestiaryBackButton:hover,
+#introBackButton:hover {
+    background-color: white;
+    color: black;
+}

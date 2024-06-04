@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Menu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <img id="playerShip" src="assets/playership.png" style="display: none;">
+    <img id="enemySmall" src="assets/enemysmall.png" style="display: none;">
+    <img id="largeEnemy1" src="assets/largeenemy.png" style="display: none;">
+    <img id="largeEnemy2" src="assets/largeenemy2.png" style="display: none;">
+    <img id="playerAllyLarge" src="assets/playerAllyLarge.png" style="display: none;">
+    <div id="mainMenu">
+        <button id="startButton" class="button">START</button>
+        <button id="introButton" class="button">INTRO</button>
+        <button id="bestiaryButton" class="button">BESTIARY</button>
+        <button id="quitButton" class="button">QUIT</button>
+    </div>
+    <div id="gameArea" style="display: none;">
+        <!-- Game content goes here -->
+        <div id="player"></div>
+    </div>
+    <div id="introVideo" style="display: none;">
+        <!-- Video player for intro video -->
+        <video id="introVideoPlayer" controls>
+            <source src="assets/intro.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <button id="introBackButton" class="button">Go back</button>
+    </div>
+    <div id="bestiary" style="display: none;">
+        <h2>Bestiary</h2>
+        <input type="text" id="searchInput" placeholder="Search for creatures...">
+        <button id="searchButton" class="button">Search</button>
+        <div id="searchResults"></div>
+        <button id="bestiaryBackButton" class="button">Go back</button>
+    </div>
+    <script src="test.js"></script>
+</body>
+</html>
+
