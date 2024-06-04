@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function() {
         function spawnLargeEnemy() {
             setTimeout(() => { // Delay large enemy spawn
                 const largeEnemy = document.createElement('img'); // Create img element
-                largeEnemy.src = 'largeenemy1.png'; // Set the src attribute to your large enemy image
+                largeEnemy.src = 'assets/largeenemy.png'; // Set the src attribute to your large enemy image
                 largeEnemy.classList.add('largeEnemy');
                 largeEnemy.style.left = gameArea.clientWidth - 100 + 'px';
                 largeEnemy.style.top = Math.random() * (gameArea.clientHeight - 100) + 'px';
