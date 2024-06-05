@@ -12,6 +12,8 @@
     <img id="largeEnemy1" src="assets/largeenemy.png" style="display: none;">
     <img id="largeEnemy2" src="assets/largeenemy2.png" style="display: none;">
     <img id="playerAllyLarge" src="assets/playerAllyLarge.png" style="display: none;">
+    <img id="moonTitleScreen" src="assets/moonTitleScreen.png" style="display: none;">
+    <div class="title">SQUADRON</div>
     <div id="mainMenu">
         <button id="startButton" class="button">START</button>
         <button id="introButton" class="button">INTRO</button>
@@ -21,6 +23,8 @@
     <div id="gameArea" style="display: none;">
         <!-- Game content goes here -->
         <div id="player"></div>
+        <button id="musicButton" class="button" style="display: none;">Play Music</button>
+        <audio id="gameMusic" src="assets/shattered.mp3" type="audio/mpeg"></audio>
     </div>
     <div id="introVideo" style="display: none;">
         <!-- Video player for intro video -->
@@ -32,7 +36,7 @@
     </div>
     <div id="bestiary" style="display: none;">
         <h2>Bestiary</h2>
-        <input type="text" id="searchInput" placeholder="Search for creatures...">
+        <input type="text" id="searchInput" placeholder="Oscar, Dorado, Quarterhouse, Defender...">
         <button id="searchButton" class="button">Search</button>
         <div id="searchResults"></div>
         <button id="bestiaryBackButton" class="button">Go back</button>
@@ -40,4 +44,3 @@
     <script src="test.js"></script>
 </body>
 </html>
-

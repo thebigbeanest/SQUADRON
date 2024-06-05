@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Get references to menu buttons and sections
     const startButton = document.getElementById("startButton");
     const introButton = document.getElementById("introButton");
     const bestiaryButton = document.getElementById("bestiaryButton");
@@ -10,41 +9,54 @@ document.addEventListener("DOMContentLoaded", function() {
     const introVideo = document.getElementById("introVideo");
     const bestiary = document.getElementById("bestiary");
 
+    const musicButton = document.getElementById("musicButton");
+    const gameMusic = document.getElementById("gameMusic");
+
     let gameLoopInterval;
     let enemySpawnInterval;
+    let largeEnemySpawnInterval;
 
-    // Function to start the game
     function startGame() {
-        // Show game area, hide other sections
         gameArea.style.display = "block";
         mainMenu.style.display = "none";
         introVideo.style.display = "none";
         bestiary.style.display = "none";
+        musicButton.style.display = "inline";
 
-        // Game code starts here
         const player = document.getElementById('player');
         const playerSpeed = 5;
         const bulletSpeed = 10;
         const enemySpeed = 2;
-        const enemyBulletSpeed = 5;
-        const largeEnemyBulletSpeed = 3;
-        const largeEnemyHealth = 20;
-        const messageDuration = 5000; // 5 seconds
-        const flashInterval = 500; // Flash interval in milliseconds
+        const largeEnemyHealth = 50;
+        const dodgeDuration = 1000;
+        const dodgeSpeed = 20;
+        const dodgeCooldown = 3000;
+        const missileCooldown = 6000;
+        const missileDamage = 10;
+        const messageDuration = 5000;
+        const flashInterval = 500;
 
         let bullets = [];
         let enemies = [];
-        let enemyBullets = [];
         let largeEnemies = [];
+        let enemyBullets = [];
         let keys = {};
         let playerAlive = true;
-        let enemyCount = 0;
+        let isDodging = false;
+        let dodgeTimeout;
+        let dodgeCooldownTimeout;
+        let canDodge = true;
+        let canShootMissile = true;
 
-        // Add event listeners for player controls
         document.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            if (e.key === ' ' && playerAlive) {
-                shootBullet();
+            if (e.key !== ' ' && e.key !== 'r') {
+                keys[e.key] = true;
+            } else if (e.key === ' ') {
+                if (playerAlive) shootBullet();
+                e.preventDefault();
+            } else if (e.key === 'r') {
+                if (canShootMissile) shootMissile();
+                e.preventDefault();
             }
         });
 
@@ -66,6 +78,9 @@ document.addEventListener("DOMContentLoaded", function() {
             if (keys['d'] && player.offsetLeft < gameArea.clientWidth - player.clientWidth) {
                 player.style.left = player.offsetLeft + playerSpeed + 'px';
             }
+            if (keys['Shift'] && canDodge) {
+                dodge();
+            }
         }
 
         function shootBullet() {
@@ -75,6 +90,103 @@ document.addEventListener("DOMContentLoaded", function() {
             bullet.style.top = player.offsetTop + player.clientHeight / 2 - 5 + 'px';
             gameArea.appendChild(bullet);
             bullets.push(bullet);
+        }
+
+        function shootMissile() {
+            const missile = document.createElement('div');
+            missile.classList.add('missile');
+            missile.style.left = player.offsetLeft + player.clientWidth + 'px';
+            missile.style.top = player.offsetTop + player.clientHeight / 2 - 5 + 'px';
+            gameArea.appendChild(missile);
+
+            const nearestEnemy = findNearestEnemy(missile);
+            if (nearestEnemy) {
+                moveMissile(missile, nearestEnemy);
+            }
+
+            canShootMissile = false;
+            updateMissileCooldownDisplay();
+
+            setTimeout(() => {
+                canShootMissile = true;
+                updateMissileCooldownDisplay();
+            }, missileCooldown);
+        }
+
+        function updateMissileCooldownDisplay() {
+            const missileCooldownDisplay = document.getElementById('missileCooldown');
+            missileCooldownDisplay.textContent = canShootMissile ? 'Ready' : 'Recharging';
+        }
+
+        function findNearestEnemy(missile) {
+            let nearestEnemy = null;
+            let minDistance = Infinity;
+
+            enemies.concat(largeEnemies).forEach(enemy => {
+                const dx = enemy.offsetLeft - missile.offsetLeft;
+                const dy = enemy.offsetTop - missile.offsetTop;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestEnemy = enemy;
+                }
+            });
+
+            return nearestEnemy;
+        }
+
+        function moveMissile(missile, target) {
+            const missileSpeed = 7;
+
+            function updateMissilePosition() {
+                const dx = target.offsetLeft - missile.offsetLeft;
+                const dy = target.offsetTop - missile.offsetTop;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const velocityX = (dx / distance) * missileSpeed;
+                const velocityY = (dy / distance) * missileSpeed;
+
+                missile.style.left = missile.offsetLeft + velocityX + 'px';
+                missile.style.top = missile.offsetTop + velocityY + 'px';
+
+                if (checkCollision(missile, target)) {
+                    missile.remove();
+                    if (target.classList.contains('largeEnemy')) {
+                        target.health -= missileDamage;
+                        if (target.health <= 0) {
+                            target.remove();
+                            largeEnemies = largeEnemies.filter(e => e !== target);
+                        }
+                    } else {
+                        target.remove();
+                        enemies = enemies.filter(e => e !== target);
+                    }
+                    clearInterval(missileInterval);
+                }
+            }
+
+            const missileInterval = setInterval(updateMissilePosition, 20);
+        }
+
+        function dodge() {
+            isDodging = true;
+            player.classList.add('dodging');
+            const originalTop = player.offsetTop;
+
+            if (keys['w']) {
+                player.style.top = Math.max(player.offsetTop - dodgeSpeed, 0) + 'px';
+            } else if (keys['s']) {
+                player.style.top = Math.min(player.offsetTop + dodgeSpeed, gameArea.clientHeight - player.clientHeight) + 'px';
+            }
+
+            dodgeTimeout = setTimeout(() => {
+                isDodging = false;
+                player.classList.remove('dodging');
+            }, dodgeDuration);
+
+            canDodge = false;
+            dodgeCooldownTimeout = setTimeout(() => {
+                canDodge = true;
+            }, dodgeCooldown);
         }
 
         function moveBullets() {
@@ -88,214 +200,227 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         function spawnEnemy() {
-            if (enemyCount >= 10) {
-                spawnLargeEnemy();
-                enemyCount = 0;
-            } else {
-                const enemy = document.createElement('img'); // Create img element
-                enemy.src = 'enemysmall.png'; // Set the src attribute to your enemy image
-                enemy.classList.add('enemy');
-                enemy.style.left = gameArea.clientWidth - 50 + 'px';
-                enemy.style.top = Math.random() * (gameArea.clientHeight - 50) + 'px';
-                gameArea.appendChild(enemy);
-                enemies.push(enemy);
-                enemyCount++;
+            console.log('Spawning enemy...');
+            if (enemies.length > 0 && gameArea.clientWidth - enemies[enemies.length - 1].offsetLeft < 150) {
+                console.log('Spawn skipped to prevent overlap.');
+                return;
             }
+            const enemy = document.createElement('img');
+            enemy.classList.add('enemy');
+            enemy.style.left = gameArea.clientWidth - 50 + 'px';
+            enemy.style.top = Math.random() * (gameArea.clientHeight - 50) + 'px';
+            enemy.initialLeft = enemy.offsetLeft;
+            gameArea.appendChild(enemy);
+            enemies.push(enemy);
+            startEnemyFiring(enemy);
         }
 
         function spawnLargeEnemy() {
-            setTimeout(() => { // Delay large enemy spawn
-                const largeEnemy = document.createElement('img'); // Create img element
-                largeEnemy.src = 'assets/largeenemy.png'; // Set the src attribute to your large enemy image
-                largeEnemy.classList.add('largeEnemy');
-                largeEnemy.style.left = gameArea.clientWidth - 100 + 'px';
-                largeEnemy.style.top = Math.random() * (gameArea.clientHeight - 100) + 'px';
-                largeEnemy.health = largeEnemyHealth;
-                gameArea.appendChild(largeEnemy);
-                largeEnemies.push(largeEnemy);
-            }, messageDuration); // Spawn large enemy after message duration
-            displayFlashingMessage('CAPITAL SHIP INBOUND', 3); // Display flashing message
+            console.log('Spawning large enemy...');
+            if (largeEnemies.length > 0 && gameArea.clientWidth - largeEnemies[largeEnemies.length - 1].offsetLeft < 300) {
+                console.log('Spawn skipped to prevent overlap.');
+                return;
+            }
+            const largeEnemy = document.createElement('img');
+            largeEnemy.classList.add('largeEnemy');
+            largeEnemy.style.left = gameArea.clientWidth - 100 + 'px';
+            largeEnemy.style.top = Math.random() * (gameArea.clientHeight - 100) + 'px';
+            largeEnemy.health = largeEnemyHealth;
+            gameArea.appendChild(largeEnemy);
+            largeEnemies.push(largeEnemy);
+            startLargeEnemyFiring(largeEnemy);
+            displayFlashingMessage('CAPITAL SHIP INBOUND', 3);
         }
 
-        function displayFlashingMessage(message, flashes) {
-            const flashingText = document.createElement('div');
-            flashingText.textContent = "CAPITAL SHIP INBOUND";
-            flashingText.style.position = 'absolute';
-            flashingText.style.top = '50px'; // Adjust the top position as needed
-            flashingText.style.left = '50%';
-            flashingText.style.transform = 'translateX(-50%)';
-            flashingText.style.fontSize = '24px';
-            flashingText.style.color = 'white';
-            flashingText.style.textAlign = 'center';
-            flashingText.style.fontWeight = 'bold';
-            flashingText.style.visibility = 'hidden';
-            gameArea.appendChild(flashingText);
-
-            let flashCount = 0;
-            const flashIntervalId = setInterval(() => {
-                flashCount++;
-                if (flashingText.style.visibility === 'hidden') {
-                    flashingText.style.visibility = 'visible';
-                } else {
-                    flashingText.style.visibility = 'hidden';
+        function startEnemyFiring(enemy) {
+            const enemyFireInterval = setInterval(() => {
+                if (!document.body.contains(enemy) || enemy.offsetLeft < gameArea.clientWidth / 2) {
+                    clearInterval(enemyFireInterval);
+                    return;
                 }
-                if (flashCount === flashes * 2) {
-                    clearInterval(flashIntervalId);
-                    flashingText.remove();
-                }
-            }, flashInterval);
+                const bullet = document.createElement('div');
+                bullet.classList.add('enemyBullet');
+                bullet.style.left = enemy.offsetLeft - 10 + 'px';
+                bullet.style.top = enemy.offsetTop + enemy.clientHeight / 2 - 5 + 'px';
+                gameArea.appendChild(bullet);
+                enemyBullets.push(bullet);
+            }, 1000);
         }
 
-        function moveEnemies() {
-            enemies.forEach((enemy, index) => {
-                if (enemy.offsetLeft > gameArea.clientWidth / 2) {
-                    enemy.style.left = enemy.offsetLeft - enemySpeed + 'px';
-                } else {
-                    if (!enemy.shooting) {
-                        enemy.shooting = true;
-                        setInterval(() => shootEnemyBullet(enemy), 1000);
-                    }
+        function startLargeEnemyFiring(largeEnemy) {
+            const largeEnemyFireInterval = setInterval(() => {
+                if (!document.body.contains(largeEnemy) || largeEnemy.offsetLeft < gameArea.clientWidth / 2) {
+                    clearInterval(largeEnemyFireInterval);
+                    return;
                 }
-            });
 
-            largeEnemies.forEach((largeEnemy, index) => {
-                // Adjust the speed calculation for large enemies
-                const largeEnemyMoveSpeed = enemySpeed / 3; // 1/3rd of the normal enemy speed
+                const playerX = player.offsetLeft + player.clientWidth / 2;
+                const playerY = player.offsetTop + player.clientHeight / 2;
 
-                if (largeEnemy.offsetLeft > gameArea.clientWidth / 2) {
-                    largeEnemy.style.left = largeEnemy.offsetLeft - largeEnemyMoveSpeed + 'px';
-                } else {
-                    if (!largeEnemy.shooting) {
-                        largeEnemy.shooting = true;
-                        setInterval(() => shootEnemyBullet(largeEnemy, largeEnemyBulletSpeed), 1000);
-                    }
-                }
-            });
+                createLargeEnemyBullet(largeEnemy, playerX, playerY + 20);
+                createLargeEnemyBullet(largeEnemy, playerX, playerY - 20);
+            }, 1000);
         }
 
-        function shootEnemyBullet(enemy, speed = enemyBulletSpeed) {
+        function createLargeEnemyBullet(largeEnemy, targetX, targetY) {
             const bullet = document.createElement('div');
             bullet.classList.add('enemyBullet');
-            bullet.style.left = enemy.offsetLeft + 'px';
-            bullet.style.top = enemy.offsetTop + enemy.clientHeight / 2 - 5 + 'px';
-            bullet.speed = speed;
+            bullet.style.left = largeEnemy.offsetLeft - 10 + 'px';
+            bullet.style.top = largeEnemy.offsetTop + largeEnemy.clientHeight / 2 - 5 + 'px';
+
+            const deltaX = targetX - (largeEnemy.offsetLeft - 10);
+            const deltaY = targetY - (largeEnemy.offsetTop + largeEnemy.clientHeight / 2 - 5);
+            const angle = Math.atan2(deltaY, deltaX);
+            const velocityX = Math.cos(angle) * bulletSpeed;
+            const velocityY = Math.sin(angle) * bulletSpeed;
+
             gameArea.appendChild(bullet);
-            enemyBullets.push(bullet);
+
+            const bulletMovementInterval = setInterval(() => {
+                bullet.style.left = bullet.offsetLeft + velocityX + 'px';
+                bullet.style.top = bullet.offsetTop + velocityY + 'px';
+
+                if (bullet.offsetLeft < 0 || bullet.offsetTop < 0 ||
+                    bullet.offsetLeft > gameArea.clientWidth || bullet.offsetTop > gameArea.clientHeight) {
+                    bullet.remove();
+                    clearInterval(bulletMovementInterval);
+                }
+            }, 20);
         }
 
         function moveEnemyBullets() {
             enemyBullets.forEach((bullet, index) => {
-                bullet.style.left = bullet.offsetLeft - bullet.speed + 'px';
+                bullet.style.left = bullet.offsetLeft - bulletSpeed + 'px';
                 if (bullet.offsetLeft < 0) {
                     bullet.remove();
                     enemyBullets.splice(index, 1);
                 }
-
-                // Check collision with player
                 if (checkCollision(bullet, player)) {
-                    playerAlive = false;
-                    alert("Game Over! You were hit by an enemy bullet.");
-                    bullet.remove();
-                    enemyBullets.splice(index, 1);
+                    endGame();
                 }
             });
         }
 
-        function checkCollision(rect1, rect2) {
-            return !(rect1.offsetLeft > rect2.offsetLeft + rect2.clientWidth ||
-                     rect1.offsetLeft + rect1.clientWidth < rect2.offsetLeft ||
-                     rect1.offsetTop > rect2.offsetTop + rect2.clientHeight ||
-                     rect1.offsetTop + rect1.clientHeight < rect2.offsetTop);
-        }
+        function moveEnemies() {
+            enemies.forEach((enemy, index) => {
+                enemy.style.left = enemy.offsetLeft - enemySpeed + 'px';
+                if (enemy.offsetLeft < 0) {
+                    enemy.remove();
+                    enemies.splice(index, 1);
+                }
 
-        function checkBulletCollisions() {
-            bullets.forEach((bullet, bulletIndex) => {
-                enemies.forEach((enemy, enemyIndex) => {
+                bullets.forEach((bullet, bulletIndex) => {
                     if (checkCollision(bullet, enemy)) {
                         bullet.remove();
                         bullets.splice(bulletIndex, 1);
                         enemy.remove();
-                        enemies.splice(enemyIndex, 1);
+                        enemies.splice(index, 1);
                     }
                 });
 
-                largeEnemies.forEach((largeEnemy, largeEnemyIndex) => {
-                    if (checkCollision(bullet, largeEnemy)) {
-                        bullet.remove();
-                        bullets.splice(bulletIndex, 1);
-                        largeEnemy.health--;
-                        if (largeEnemy.health <= 0) {
-                            largeEnemy.remove();
-                            largeEnemies.splice(largeEnemyIndex, 1);
-                        }
-                    }
-                });
+                if (checkCollision(enemy, player)) {
+                    endGame();
+                }
             });
         }
 
-        function gameLoop() {
-            if (playerAlive) {
-                movePlayer();
-                moveBullets();
-                moveEnemies();
-                moveEnemyBullets();
-                checkBulletCollisions();
-                requestAnimationFrame(gameLoop);
+        function moveLargeEnemies() {
+            largeEnemies.forEach((largeEnemy, index) => {
+                largeEnemy.style.left = largeEnemy.offsetLeft - enemySpeed + 'px';
+                if (largeEnemy.offsetLeft < 0) {
+                    largeEnemy.remove();
+                    largeEnemies.splice(index, 1);
+                }
+
+                bullets.forEach((bullet, bulletIndex) => {
+                    if (checkCollision(bullet, largeEnemy)) {
+                        bullet.remove();
+                        bullets.splice(bulletIndex, 1);
+                        largeEnemy.health -= 1;
+                        if (largeEnemy.health <= 0) {
+                            largeEnemy.remove();
+                            largeEnemies.splice(index, 1);
+                        }
+                    }
+                });
+
+                if (checkCollision(largeEnemy, player)) {
+                    endGame();
+                }
+            });
+        }
+
+        function checkCollision(obj1, obj2) {
+            const rect1 = obj1.getBoundingClientRect();
+            const rect2 = obj2.getBoundingClientRect();
+            return !(rect1.right < rect2.left ||
+                     rect1.left > rect2.right ||
+                     rect1.bottom < rect2.top ||
+                     rect1.top > rect2.bottom);
+        }
+
+        function endGame() {
+            playerAlive = false;
+            clearInterval(gameLoopInterval);
+            clearInterval(enemySpawnInterval);
+            clearInterval(largeEnemySpawnInterval);
+        }
+
+        function toggleMusic() {
+            if (gameMusic.paused) {
+                gameMusic.play();
+                musicButton.textContent = "Pause Music";
+            } else {
+                gameMusic.pause();
+                musicButton.textContent = "Play Music";
             }
         }
 
-        if (!gameLoopInterval) {
-            gameLoopInterval = requestAnimationFrame(gameLoop);
-        }
+        musicButton.addEventListener("click", toggleMusic);
 
-        if (!enemySpawnInterval) {
-            enemySpawnInterval = setInterval(spawnEnemy, 700);
-        }
+        gameLoopInterval = setInterval(() => {
+            movePlayer();
+            moveBullets();
+            moveEnemies();
+            moveLargeEnemies();
+            moveEnemyBullets();
+        }, 20);
+
+        enemySpawnInterval = setInterval(spawnEnemy, 2000);
+        largeEnemySpawnInterval = setInterval(spawnLargeEnemy, 10000);
     }
 
-    // Add event listener to start button
     startButton.addEventListener("click", startGame);
-
-    // Add event listeners for other buttons
-    introButton.addEventListener("click", function() {
-        // Show intro video, hide other sections
+    introButton.addEventListener("click", () => {
         introVideo.style.display = "block";
         mainMenu.style.display = "none";
         gameArea.style.display = "none";
         bestiary.style.display = "none";
     });
-
-    bestiaryButton.addEventListener("click", function() {
-        // Show bestiary, hide other sections
+    bestiaryButton.addEventListener("click", () => {
         bestiary.style.display = "block";
         mainMenu.style.display = "none";
         gameArea.style.display = "none";
-        introVideo.style.display = "none";
+        introVideo.style.display      = "none";
     });
-
-    quitButton.addEventListener("click", function() {
-        // Close the tab
+    quitButton.addEventListener("click", () => {
         window.close();
     });
 
-    // Add event listeners to back buttons
     document.getElementById("introBackButton").addEventListener("click", function() {
-        // Show main menu, hide intro video
         mainMenu.style.display = "block";
         introVideo.style.display = "none";
     });
 
     document.getElementById("bestiaryBackButton").addEventListener("click", function() {
-        // Show main menu, hide bestiary
         mainMenu.style.display = "block";
         bestiary.style.display = "none";
     });
 
-    // Bestiary search functionality
     const searchButton = document.getElementById("searchButton");
     const searchInput = document.getElementById("searchInput");
     const searchResults = document.getElementById("searchResults");
-
+    
     searchButton.addEventListener("click", function() {
         const query = searchInput.value;
         if (query) {
@@ -371,4 +496,18 @@ document.addEventListener("DOMContentLoaded", function() {
     
         searchResults.appendChild(ul);
     }
-});
+    
+    function displayFlashingMessage(message, duration) {
+        const flashingMessage = document.createElement('div');
+        flashingMessage.textContent = message;
+        flashingMessage.classList.add('flashingMessage');
+        gameArea.appendChild(flashingMessage);
+        setTimeout(() => {
+            flashingMessage.remove();
+        }, duration * 1000);
+    }
+    
+    function updateMissileCooldownDisplay() {
+        const missileCooldownDisplay = document.getElementById('missileCooldown');
+        missileCooldownDisplay.textContent = canShootMissile ? 'Ready' : 'Recharging';
+    }});
