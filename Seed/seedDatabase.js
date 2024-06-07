@@ -38,7 +38,7 @@ const seedData = async () => {
     const ships = [
       { allegiance: seededFactions[0]._id, description: 'A mid-sized Federation escort frigate intended to delay larger cruisers and destroy smaller vessels.', image: 'warship.png', health: 2000, name: 'PH-78-Class Frigate' },
       { allegiance: seededFactions[0]._id, description: 'A new, experimental, and agile interceptor deployed out of the Dorado Nuclear Range in order to protect the Horizon facility.', image: 'playership.png', health: 500, name: 'PI-90 Quarterhouse' },
-      { allegiance: seededFactions[0]._id, description: 'Multirole orbital defense craft, with nuclear pulse propulsion and heavy weapons systems. The mainstay of the deep space bombardment force.', image: 'ODC2_DEFENDER.png', health: 4000, name: 'ODC2-DEFENDER' }
+      { allegiance: seededFactions[0]._id, description: 'Multirole orbital defense craft, with nuclear pulse propulsion and heavy weapons systems. The mainstay of the deep space bombardment force.', image: 'playerAllyLarge.png', health: 4000, name: 'ODC2-DEFENDER' }
     ];
 
     const enemies = [

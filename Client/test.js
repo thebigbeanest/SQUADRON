@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function() {
     const startButton = document.getElementById("startButton");
     const introButton = document.getElementById("introButton");
@@ -16,6 +17,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let enemySpawnInterval;
     let largeEnemySpawnInterval;
 
+
+    
     function startGame() {
         gameArea.style.display = "block";
         mainMenu.style.display = "none";
@@ -28,9 +31,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const bulletSpeed = 10;
         const enemySpeed = 1;
         const largeEnemyHealth = 50;
-        const dodgeDuration = 1000;
+        const dodgeDuration = 100000;
         const dodgeSpeed = 20;
-        const dodgeCooldown = 3000;
+        const dodgeCooldown = 190;
         const missileCooldown = 6000;
         const missileDamage = 10;
         const messageDuration = 5000;
@@ -47,6 +50,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let dodgeCooldownTimeout;
         let canDodge = true;
         let canShootMissile = true;
+        let lockedEnemy = null;
 
         document.addEventListener('keydown', (e) => {
             if (e.key !== ' ' && e.key !== 'r') {
@@ -92,62 +96,109 @@ document.addEventListener("DOMContentLoaded", function() {
             bullets.push(bullet);
         }
 
+
+        function findNearestEnemy(referenceElement) {
+            // Get all enemy elements
+            const enemyElements = document.querySelectorAll('.enemy');
+            
+            // Initialize variables for storing the nearest enemy and its distance
+            let nearestEnemy = null;
+            let nearestDistance = Number.MAX_VALUE;
+            
+            // Iterate over each enemy element
+            enemyElements.forEach(enemy => {
+                // Calculate the distance between the reference element and the current enemy
+                const distance = calculateDistance(referenceElement, enemy);
+                
+                // Update nearest enemy if the current enemy is closer
+                if (distance < nearestDistance) {
+                    nearestEnemy = enemy;
+                    nearestDistance = distance;
+                }
+            });
+            
+            // Return the nearest enemy
+            return nearestEnemy;
+        }
+        
+        // Function to calculate distance between two elements
+        function calculateDistance(element1, element2) {
+            const rect1 = element1.getBoundingClientRect();
+            const rect2 = element2.getBoundingClientRect();
+            const dx = rect1.left - rect2.left;
+            const dy = rect1.top - rect2.top;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+
+
+
+
+        function lockEnemy() {
+            // Remove red outline from previously locked enemy
+            if (lockedEnemy) {
+                lockedEnemy.classList.remove('locked');
+            }
+    
+            // Set new locked enemy to the enemy being hovered over
+            lockedEnemy = this;
+            lockedEnemy.classList.add('locked'); // Add red outline to locked enemy
+        }
+    
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'e') {
+                if (lockedEnemy) {
+                    lockedEnemy.classList.remove('locked'); // Remove red outline from previously locked enemy
+                    lockedEnemy = null; // Clear locked enemy
+                } else {
+                    // Find closest enemy to player's position
+                    lockedEnemy = findNearestEnemy(player);
+                    if (lockedEnemy) {
+                        lockedEnemy.classList.add('locked'); // Add red outline to locked enemy
+                    }
+                }
+            }
+        });
+
+
+
+
         function shootMissile() {
             const missile = document.createElement('div');
             missile.classList.add('missile');
             missile.style.left = player.offsetLeft + player.clientWidth + 'px';
             missile.style.top = player.offsetTop + player.clientHeight / 2 - 5 + 'px';
             gameArea.appendChild(missile);
-
-            const nearestEnemy = findNearestEnemy(missile);
-            if (nearestEnemy) {
-                moveMissile(missile, nearestEnemy);
+    
+            // Check if there's a locked enemy, otherwise find nearest enemy
+            const targetEnemy = lockedEnemy || findNearestEnemy(missile);
+    
+            if (targetEnemy) {
+                moveMissile(missile, targetEnemy);
             }
-
+    
             canShootMissile = false;
             updateMissileCooldownDisplay();
-
+    
             setTimeout(() => {
                 canShootMissile = true;
                 updateMissileCooldownDisplay();
             }, missileCooldown);
         }
-
-        function updateMissileCooldownDisplay() {
-            const missileCooldownDisplay = document.getElementById('missileCooldown');
-            missileCooldownDisplay.textContent = canShootMissile ? 'Ready' : 'Recharging';
-        }
-
-        function findNearestEnemy(missile) {
-            let nearestEnemy = null;
-            let minDistance = Infinity;
-
-            enemies.concat(largeEnemies).forEach(enemy => {
-                const dx = enemy.offsetLeft - missile.offsetLeft;
-                const dy = enemy.offsetTop - missile.offsetTop;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nearestEnemy = enemy;
-                }
-            });
-
-            return nearestEnemy;
-        }
-
+        
         function moveMissile(missile, target) {
             const missileSpeed = 7;
-
+        
             function updateMissilePosition() {
                 const dx = target.offsetLeft - missile.offsetLeft;
                 const dy = target.offsetTop - missile.offsetTop;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 const velocityX = (dx / distance) * missileSpeed;
                 const velocityY = (dy / distance) * missileSpeed;
-
+        
                 missile.style.left = missile.offsetLeft + velocityX + 'px';
                 missile.style.top = missile.offsetTop + velocityY + 'px';
-
+        
                 if (checkCollision(missile, target)) {
                     missile.remove();
                     if (target.classList.contains('largeEnemy')) {
@@ -163,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     clearInterval(missileInterval);
                 }
             }
-
+        
             const missileInterval = setInterval(updateMissilePosition, 20);
         }
 
@@ -524,7 +575,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }, duration * 1000);
     }
     
-    function updateMissileCooldownDisplay() {
+    function updateMissileCooldownDisplay(canShootMissile) {
         const missileCooldownDisplay = document.getElementById('missileCooldown');
         missileCooldownDisplay.textContent = canShootMissile ? 'Ready' : 'Recharging';
     }});
