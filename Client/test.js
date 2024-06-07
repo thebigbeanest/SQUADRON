@@ -24,9 +24,9 @@ document.addEventListener("DOMContentLoaded", function() {
         musicButton.style.display = "inline";
 
         const player = document.getElementById('player');
-        const playerSpeed = 5;
+        const playerSpeed = 8;
         const bulletSpeed = 10;
-        const enemySpeed = 2;
+        const enemySpeed = 1;
         const largeEnemyHealth = 50;
         const dodgeDuration = 1000;
         const dodgeSpeed = 20;
@@ -417,9 +417,10 @@ document.addEventListener("DOMContentLoaded", function() {
         bestiary.style.display = "none";
     });
 
-    const searchButton = document.getElementById("searchButton");
     const searchInput = document.getElementById("searchInput");
+    const searchButton = document.getElementById("searchButton");
     const searchResults = document.getElementById("searchResults");
+    const suggestionsBox = document.getElementById("suggestionsBox");
     
     searchButton.addEventListener("click", function() {
         const query = searchInput.value;
@@ -434,6 +435,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
         }
     });
+
+    function showSuggestions() {
+        const query = searchInput.value;
+        if (query.length < 2) {
+            suggestionsBox.style.display = "none";
+            return;
+        }
+    }
     
     function displaySearchResults(results) {
         searchResults.innerHTML = ''; // Clear previous results
@@ -445,6 +454,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     
         const ul = document.createElement('ul');
+        ul.classList.add('resultsList');
     
         // Iterate over each type of result (enemies, factions, locations, lores, ships)
         for (const type in results) {
@@ -462,24 +472,25 @@ document.addEventListener("DOMContentLoaded", function() {
                     // Create a list item for each result
                     typeResults.forEach(result => {
                         const li = document.createElement('li');
+                        li.classList.add('resultItem');
                         let displayText = '';
     
                         // Customize display based on the object type
                         switch (type) {
                             case 'enemies':
-                                displayText = `Name: ${result.name}, Description: ${result.description}, Health: ${result.health}`;
+                                displayText = `Name: ${result.name}, Description: ${result.description}, Health: ${result.health}, Allegiance: ${result.allegiance.name}`;
                                 break;
                             case 'factions':
                                 displayText = `Name: ${result.name}, Description: ${result.description}, Status: ${result.status}`;
                                 break;
                             case 'locations':
-                                displayText = `Name: ${result.name}, Description: ${result.description}, Functional: ${result.functional}, Purpose: ${result.purpose}, Population: ${result.population}`;
+                                displayText = `Name: ${result.name}, Description: ${result.description}, Functional: ${result.functional}, Purpose: ${result.purpose}, Population: ${result.population}, Allegiance: ${result.allegiance.name}`;
                                 break;
                             case 'lores':
-                                displayText = `Description: ${result.description}`;
+                                displayText = `Description: ${result.description}, Allegiance: ${result.allegiance.name}`;
                                 break;
                             case 'ships':
-                                displayText = `Name: ${result.name}, Health: ${result.health}, Description: ${result.description}`;
+                                displayText = `Name: ${result.name}, Health: ${result.health}, Description: ${result.description}, Allegiance: ${result.allegiance.name}`;
                                 break;
                             default:
                                 displayText = ''; // No specific display for other types
@@ -487,7 +498,13 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
     
                         // Add the display text to the list item
-                        li.textContent = displayText;
+                        li.innerHTML = `<p>${displayText}</p>`;
+                        if (result.image) {
+                            const img = document.createElement('img');
+                            img.src = `assets/${result.image}`; // Assuming images are stored in the assets folder
+                            img.alt = result.name;
+                            li.appendChild(img);
+                        }
                         ul.appendChild(li);
                     });
                 }

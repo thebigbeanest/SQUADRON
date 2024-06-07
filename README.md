@@ -13,4 +13,5 @@ Goals and User Stories:
 
 Stretch Goals:
 - Add sound effects for the buttons clicked in main menu and bestiary.
-- 
+- Add an actual game.
+

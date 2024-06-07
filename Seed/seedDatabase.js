@@ -37,14 +37,14 @@ const seedData = async () => {
     // Create the other data arrays using the seeded factions' _id
     const ships = [
       { allegiance: seededFactions[0]._id, description: 'A mid-sized Federation escort frigate intended to delay larger cruisers and destroy smaller vessels.', image: 'warship.png', health: 2000, name: 'PH-78-Class Frigate' },
-      { allegiance: seededFactions[0]._id, description: 'A new, experimental, and agile interceptor deployed out of the Dorado Nuclear Range in order to protect the Horizon facility.', image: 'fighter.png', health: 500, name: 'PI-90 Quarterhouse' },
+      { allegiance: seededFactions[0]._id, description: 'A new, experimental, and agile interceptor deployed out of the Dorado Nuclear Range in order to protect the Horizon facility.', image: 'playership.png', health: 500, name: 'PI-90 Quarterhouse' },
       { allegiance: seededFactions[0]._id, description: 'Multirole orbital defense craft, with nuclear pulse propulsion and heavy weapons systems. The mainstay of the deep space bombardment force.', image: 'ODC2_DEFENDER.png', health: 4000, name: 'ODC2-DEFENDER' }
     ];
 
     const enemies = [
-      { name: 'Oscar Class Gunship', description: 'A light cruiser currently in use by the RSA, sporting heavy armor and firepower at the cost of maneuverability.', image: 'OSCAR_CLASS_GUNSHIP.png', health: 5000, allegiance: seededFactions[1]._id },
-      { name: 'Olympic Class Silocraft', description: 'A ballistic missile vessel currently in use by the RSA. Sacrifices armor and maneuverability in exchange for massive missile payloads and nuclear capability.', image: 'OLYMPIC_CLASS_SILOCRAFT.png', health: 3400, allegiance: seededFactions[1]._id },
-      { name: 'Sierra Class Fighter', description: 'An outdated reserve fighter hastily put into service by the RSA at the outbreak of the Lunar War. Retains moderate agility but is very fragile.', image: 'SIERRA_CLASS_FIGHTER.png', health: 150, allegiance: seededFactions[1]._id }
+      { name: 'Oscar Class Gunship', description: 'A light cruiser currently in use by the RSA, sporting heavy armor and firepower at the cost of maneuverability.', image: 'largeenemy.png', health: 5000, allegiance: seededFactions[1]._id },
+      { name: 'Olympic Class Silocraft', description: 'A ballistic missile vessel currently in use by the RSA. Sacrifices armor and maneuverability in exchange for massive missile payloads and nuclear capability.', image: 'silocraft.png', health: 3400, allegiance: seededFactions[1]._id },
+      { name: 'Sierra Class Fighter', description: 'An outdated reserve fighter hastily put into service by the RSA at the outbreak of the Lunar War. Retains moderate agility but is very fragile.', image: 'enemysmall.png', health: 150, allegiance: seededFactions[1]._id }
     ];
 
     const locations = [

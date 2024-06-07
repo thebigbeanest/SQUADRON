@@ -97,7 +97,7 @@ body {
 }
 
 #searchInput::placeholder {
-    color: white;
+    color: black;
 }
 
 #searchButton:hover {
@@ -124,4 +124,26 @@ body {
 #introBackButton:hover {
     background-color: white;
     color: black;
+}
+.suggestions-box {
+    width: calc(100% - 4px);
+    background-color: #000;
+    border: 1px solid #333;
+    color: #fff;
+    max-height: 150px;
+    overflow-y: auto;
+    text-align: left;
+    margin-top: 2px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1000;
+}
+
+.suggestion-item {
+    padding: 5px;
+    cursor: pointer;
+}
+
+.suggestion-item:hover {
+    background-color: #555;
 }
